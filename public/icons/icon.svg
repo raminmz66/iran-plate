@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#315d77"/>
+  <path d="M104 184h304v144H104z" fill="#edf3f5"/>
+  <path d="M144 224h74v64h-74zm150 0h74v64h-74z" fill="#315d77"/>
+  <path d="M244 216h24v80h-24z" fill="#53b9ac"/>
+  <text x="256" y="374" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="700" fill="#edf3f5">IRAN</text>
+</svg>
