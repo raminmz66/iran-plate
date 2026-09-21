@@ -3,7 +3,7 @@ import { useCamera } from '../camera/useCamera'
 import { lookupLocation } from '../domain/locationLookup'
 import { parsePrivatePlate } from '../domain/plateParser'
 import { createStabilizer, type ValidLocatedPlate } from '../domain/stabilizer'
-import { findBestPlateCrop } from './candidateDetector'
+import { findBestPlateCrop, preprocessPlateForOcr } from './candidateDetector'
 import { createOcrService, type OcrService } from './ocrService'
 import { createDebugGate, formatDebugSnapshot, isDebugMode, type DebugSnapshot } from './debug'
 
@@ -59,7 +59,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         if (!crop) { updateDebug({ parser: 'کادر نامعتبر' }); setStatus('پلاک رو داخل کادر نگه دار'); return }
         serviceRef.current ??= await createOcrService()
         attemptedOcr = true
-        const reading = await serviceRef.current.recognize(crop.image)
+        const reading = await serviceRef.current.recognize(preprocessPlateForOcr(crop.image))
         if (cancelled || session !== sessionRef.current) return
         const parsed = parsePrivatePlate(reading)
         if (parsed.kind === 'invalid') { updateDebug({ rawText: reading.text, confidence: reading.confidence, parser: parsed.reason }); setStatus('نور یا فاصله را بهتر کنید'); return }
