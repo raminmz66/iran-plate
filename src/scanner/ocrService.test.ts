@@ -6,15 +6,19 @@ const { worker } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('tesseract.js', () => ({ createWorker: vi.fn().mockResolvedValue(worker) }))
+vi.mock('tesseract.js', () => ({ createWorker: vi.fn().mockResolvedValue(worker), PSM: { SINGLE_LINE: '7' } }))
 
 import { createOcrService } from './ocrService'
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ putImageData: vi.fn() } as unknown as CanvasRenderingContext2D)
+  vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => callback(new Blob(['plate'])))
+})
 
 it('configures Persian OCR for a single plate line', async () => {
   const service = await createOcrService()
-  await service.recognize({} as ImageData)
+  await service.recognize({ width: 10, height: 10 } as ImageData)
   expect(worker.setParameters).toHaveBeenCalledWith(expect.objectContaining({ tessedit_pageseg_mode: '7' }))
   expect(worker.recognize).toHaveBeenCalled()
 })
