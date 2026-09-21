@@ -5,6 +5,7 @@ import { parsePrivatePlate } from '../domain/plateParser'
 import { createStabilizer, type ValidLocatedPlate } from '../domain/stabilizer'
 import { findBestPlateCrop } from './candidateDetector'
 import { createOcrService, type OcrService } from './ocrService'
+import { formatDebugSnapshot, isDebugMode, type DebugSnapshot } from './debug'
 
 type Props = { onRecognized(result: ValidLocatedPlate): void; onExit(): void }
 
@@ -15,6 +16,9 @@ export function ScannerView({ onRecognized, onExit }: Props) {
   const sessionRef = useRef(0)
   const processingRef = useRef(false)
   const [status, setStatus] = useState('پلاک رو داخل کادر نگه دار')
+  const debugMode = isDebugMode(window.location.search)
+  const [debug, setDebug] = useState<DebugSnapshot>({ parser: 'در انتظار OCR' })
+  const updateDebug = (snapshot: DebugSnapshot) => { if (debugMode) setDebug(snapshot) }
 
   useEffect(() => {
     void start()
@@ -49,14 +53,15 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         const frame = context.getImageData(0, 0, canvas.width, canvas.height)
         const guide = new DOMRect(canvas.width * 0.1, canvas.height * 0.4, canvas.width * 0.8, canvas.height * 0.2)
         const crop = findBestPlateCrop(frame, guide)
-        if (!crop) { setStatus('پلاک رو داخل کادر نگه دار'); return }
+        if (!crop) { updateDebug({ parser: 'کادر نامعتبر' }); setStatus('پلاک رو داخل کادر نگه دار'); return }
         serviceRef.current ??= await createOcrService()
         const reading = await serviceRef.current.recognize(crop.image)
         if (cancelled || session !== sessionRef.current) return
         const parsed = parsePrivatePlate(reading)
-        if (parsed.kind === 'invalid') { setStatus('نور یا فاصله را بهتر کنید'); return }
+        if (parsed.kind === 'invalid') { updateDebug({ rawText: reading.text, confidence: reading.confidence, parser: parsed.reason }); setStatus('نور یا فاصله را بهتر کنید'); return }
         const resolution = lookupLocation(parsed.plate.identity)
-        if (resolution.kind === 'unknown') { setStatus('پلاک رو داخل کادر نگه دار'); return }
+        if (resolution.kind === 'unknown') { updateDebug({ rawText: reading.text, confidence: reading.confidence, parser: 'معتبر', lookup: 'ناشناخته' }); setStatus('پلاک رو داخل کادر نگه دار'); return }
+        updateDebug({ rawText: reading.text, confidence: reading.confidence, parser: 'معتبر', lookup: resolution.kind })
         const result = stabilizer.observe({ plate: parsed.plate, resolution })
         if (!result) { setStatus('در حال تأیید پلاک…'); return }
         cancelled = true
@@ -64,7 +69,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         await serviceRef.current?.terminate()
         onRecognized(result)
       } catch {
-        if (!cancelled) setStatus('نور یا فاصله را بهتر کنید')
+        if (!cancelled) { updateDebug({ parser: 'خطا', error: 'OCR اجرا نشد' }); setStatus('نور یا فاصله را بهتر کنید') }
       } finally {
         processingRef.current = false
       }
@@ -98,6 +103,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
       <div className="scanner-shade" aria-hidden="true" />
       <header className="scanner-header"><strong>پلاک‌یاب</strong><button type="button" onClick={onExit} aria-label="بستن اسکن">×</button></header>
       <div className="plate-guide" aria-hidden="true" />
+      {debugMode && <output className="debug-panel">{formatDebugSnapshot(debug).map((line) => <span key={line}>{line}</span>)}</output>}
       <p className="scanner-status" aria-live="polite">{cameraStatus === 'requesting' ? 'در حال دریافت اجازه‌ی دوربین…' : status}</p>
       <p className="scanner-hint">پلاک رو روبرو و داخل کادر نگه دار</p>
     </main>
