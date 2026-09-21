@@ -11,6 +11,7 @@ it('shows city and province for a resolved result', () => {
   render(<ResultView result={plate10Be} onScanAnother={vi.fn()} />)
   expect(screen.getByText('تهران')).toBeVisible()
   expect(screen.getByRole('button', { name: 'اسکن پلاک دیگر' })).toBeVisible()
+  expect(screen.getByText('یادت باشه این فقط محل صدور پلاکه، نه محل فعلی خودرو یا مالک اون!')).toBeVisible()
 })
 
 it('shows every mapped location for an ambiguous result', () => {

@@ -8,5 +8,5 @@ vi.mock('../camera/useCamera', () => ({
 it('gives a clear retryable message when camera permission is denied', () => {
   render(<ScannerView onRecognized={vi.fn()} onExit={vi.fn()} />)
   expect(screen.getByText(/اجازه‌ی دوربین داده نشده/)).toBeVisible()
-  expect(screen.getByRole('button', { name: 'تلاش دوباره' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'دوباره تلاش کن' })).toBeVisible()
 })

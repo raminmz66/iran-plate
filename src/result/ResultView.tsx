@@ -20,7 +20,7 @@ export function ResultView({ result, onScanAnother }: Props) {
           {locations.map((location) => <li key={`${location.city}-${location.province}`}>{location.city}، {location.province}</li>)}
         </ul>
       ) : <p className="province">استان {locations[0].province}</p>}
-      <p className="disclaimer">این نتیجه منطقه‌ی صدور پلاک است، نه محل فعلی خودرو یا مالک آن.</p>
+      <p className="disclaimer">یادت باشه این فقط محل صدور پلاکه، نه محل فعلی خودرو یا مالک اون!</p>
       <button className="primary-button" type="button" onClick={onScanAnother}>اسکن پلاک دیگر</button>
     </main>
   )

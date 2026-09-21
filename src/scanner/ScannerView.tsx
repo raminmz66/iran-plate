@@ -14,7 +14,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
   const serviceRef = useRef<OcrService | null>(null)
   const sessionRef = useRef(0)
   const processingRef = useRef(false)
-  const [status, setStatus] = useState('پلاک را داخل کادر نگه دارید')
+  const [status, setStatus] = useState('پلاک رو داخل کادر نگه دار')
 
   useEffect(() => {
     void start()
@@ -49,14 +49,14 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         const frame = context.getImageData(0, 0, canvas.width, canvas.height)
         const guide = new DOMRect(canvas.width * 0.1, canvas.height * 0.4, canvas.width * 0.8, canvas.height * 0.2)
         const crop = findBestPlateCrop(frame, guide)
-        if (!crop) { setStatus('پلاک را داخل کادر نگه دارید'); return }
+        if (!crop) { setStatus('پلاک رو داخل کادر نگه دار'); return }
         serviceRef.current ??= await createOcrService()
         const reading = await serviceRef.current.recognize(crop.image)
         if (cancelled || session !== sessionRef.current) return
         const parsed = parsePrivatePlate(reading)
         if (parsed.kind === 'invalid') { setStatus('نور یا فاصله را بهتر کنید'); return }
         const resolution = lookupLocation(parsed.plate.identity)
-        if (resolution.kind === 'unknown') { setStatus('پلاک را داخل کادر نگه دارید'); return }
+        if (resolution.kind === 'unknown') { setStatus('پلاک رو داخل کادر نگه دار'); return }
         const result = stabilizer.observe({ plate: parsed.plate, resolution })
         if (!result) { setStatus('در حال تأیید پلاک…'); return }
         cancelled = true
@@ -86,7 +86,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
   if (errorCopy) return (
     <main className="scanner-error" dir="rtl">
       <h1>دوربین در دسترس نیست</h1><p>{errorCopy}</p>
-      <button className="primary-button" type="button" onClick={() => void start()}>تلاش دوباره</button>
+      <button className="primary-button" type="button" onClick={() => void start()}>دوباره تلاش کن</button>
       <button className="text-button" type="button" onClick={onExit}>بازگشت</button>
     </main>
   )
@@ -99,7 +99,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
       <header className="scanner-header"><strong>پلاک‌یاب</strong><button type="button" onClick={onExit} aria-label="بستن اسکن">×</button></header>
       <div className="plate-guide" aria-hidden="true" />
       <p className="scanner-status" aria-live="polite">{cameraStatus === 'requesting' ? 'در حال دریافت اجازه‌ی دوربین…' : status}</p>
-      <p className="scanner-hint">پلاک را روبه‌رو و داخل کادر نگه دارید</p>
+      <p className="scanner-hint">پلاک رو روبرو و داخل کادر نگه دار</p>
     </main>
   )
 }
