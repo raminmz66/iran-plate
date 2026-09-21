@@ -10,6 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['tessdata/fas.traineddata.gz'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,gz}'],
+      },
       manifest: {
         name: 'پلاک‌یاب ایران',
         short_name: 'پلاک‌یاب',
@@ -32,5 +35,6 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
   },
 })
