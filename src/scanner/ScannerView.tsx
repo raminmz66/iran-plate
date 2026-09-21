@@ -5,7 +5,7 @@ import { parsePrivatePlate } from '../domain/plateParser'
 import { createStabilizer, type ValidLocatedPlate } from '../domain/stabilizer'
 import { findBestPlateCrop } from './candidateDetector'
 import { createOcrService, type OcrService } from './ocrService'
-import { formatDebugSnapshot, isDebugMode, type DebugSnapshot } from './debug'
+import { createDebugGate, formatDebugSnapshot, isDebugMode, type DebugSnapshot } from './debug'
 
 type Props = { onRecognized(result: ValidLocatedPlate): void; onExit(): void }
 
@@ -18,6 +18,8 @@ export function ScannerView({ onRecognized, onExit }: Props) {
   const [status, setStatus] = useState('پلاک رو داخل کادر نگه دار')
   const debugMode = isDebugMode(window.location.search)
   const [debug, setDebug] = useState<DebugSnapshot>({ parser: 'در انتظار OCR' })
+  const debugGateRef = useRef(createDebugGate(debugMode))
+  const [debugPaused, setDebugPaused] = useState(false)
   const updateDebug = (snapshot: DebugSnapshot) => { if (debugMode) setDebug(snapshot) }
 
   useEffect(() => {
@@ -38,11 +40,12 @@ export function ScannerView({ onRecognized, onExit }: Props) {
     const stabilizer = createStabilizer()
 
     const scan = async () => {
-      if (cancelled || processingRef.current) return
+      if (cancelled || processingRef.current || !debugGateRef.current.canScan()) return
       const video = videoRef.current
       const canvas = canvasRef.current
       if (!video || !canvas || video.videoWidth === 0 || video.videoHeight === 0) return
       processingRef.current = true
+      let attemptedOcr = false
       try {
         setStatus('در حال خواندن…')
         canvas.width = video.videoWidth
@@ -55,6 +58,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         const crop = findBestPlateCrop(frame, guide)
         if (!crop) { updateDebug({ parser: 'کادر نامعتبر' }); setStatus('پلاک رو داخل کادر نگه دار'); return }
         serviceRef.current ??= await createOcrService()
+        attemptedOcr = true
         const reading = await serviceRef.current.recognize(crop.image)
         if (cancelled || session !== sessionRef.current) return
         const parsed = parsePrivatePlate(reading)
@@ -72,6 +76,10 @@ export function ScannerView({ onRecognized, onExit }: Props) {
         if (!cancelled) { updateDebug({ parser: 'خطا', error: 'OCR اجرا نشد' }); setStatus('نور یا فاصله را بهتر کنید') }
       } finally {
         processingRef.current = false
+        if (attemptedOcr && debugMode) {
+          debugGateRef.current.pause()
+          setDebugPaused(true)
+        }
       }
     }
 
@@ -103,7 +111,7 @@ export function ScannerView({ onRecognized, onExit }: Props) {
       <div className="scanner-shade" aria-hidden="true" />
       <header className="scanner-header"><strong>پلاک‌یاب</strong><button type="button" onClick={onExit} aria-label="بستن اسکن">×</button></header>
       <div className="plate-guide" aria-hidden="true" />
-      {debugMode && <output className="debug-panel">{formatDebugSnapshot(debug).map((line) => <span key={line}>{line}</span>)}</output>}
+      {debugMode && <output className="debug-panel">{formatDebugSnapshot(debug).map((line) => <span key={line}>{line}</span>)}{debugPaused && <button type="button" onClick={() => { debugGateRef.current.resume(); setDebugPaused(false) }}>ادامه اسکن</button>}</output>}
       <p className="scanner-status" aria-live="polite">{cameraStatus === 'requesting' ? 'در حال دریافت اجازه‌ی دوربین…' : status}</p>
       <p className="scanner-hint">پلاک رو روبرو و داخل کادر نگه دار</p>
     </main>

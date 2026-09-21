@@ -10,6 +10,15 @@ export function isDebugMode(search: string): boolean {
   return new URLSearchParams(search).get('debug') === '1'
 }
 
+export function createDebugGate(enabled: boolean) {
+  let paused = false
+  return {
+    canScan: () => !enabled || !paused,
+    pause: () => { if (enabled) paused = true },
+    resume: () => { paused = false },
+  }
+}
+
 export function formatDebugSnapshot(snapshot: DebugSnapshot): string[] {
   const lines: string[] = []
   if (snapshot.rawText !== undefined) lines.push(`OCR: ${snapshot.rawText || '—'}`)
