@@ -47,6 +47,10 @@ Success is a reliable result for clear, close, reasonably level, well-lit standa
 
 If recognition is not possible, the preview remains active and status text suggests a correction, such as moving closer, improving light, centering the plate, or holding the phone steady. Permission or browser failures show an explanation and retry action. There is no manual-entry fallback.
 
+### Visual direction
+
+The approved UI direction is **مسیر آبی** (Blue Route): a bright, calm, urban-navigation visual language inspired by Iranian road signs and wayfinding. The scanner uses a blue-gray live-camera treatment, a high-contrast pale guide frame, a turquoise scan-status indicator, and clear Persian RTL copy. The result screen should preserve this practical navigation feel rather than use a generic dashboard or decorative card-heavy layout.
+
 ## 4. Architecture
 
 The app is a static client-side PWA. It is deployable to any HTTPS static host and has no application server.
