@@ -9,7 +9,7 @@ export type OcrService = {
 const whitelist = '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩0123456789ابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی ایران'
 
 export async function createOcrService(): Promise<OcrService> {
-  const worker = await createWorker('fas', 1, { langPath: '/tessdata', cacheMethod: 'write' })
+  const worker = await createWorker('fas', 1, { langPath: `${import.meta.env.BASE_URL}tessdata`, cacheMethod: 'write' })
   await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE, tessedit_char_whitelist: whitelist })
   let terminated = false
   let queue = Promise.resolve()
