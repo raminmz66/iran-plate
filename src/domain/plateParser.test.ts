@@ -7,6 +7,13 @@ it('extracts code and middle letter from a standard private plate reading', () =
   })
 })
 
+it('parses the sample plate when Persian OCR returns logical RTL order', () => {
+  expect(parsePrivatePlate({ text: '۱۱ ایران ۳۴۵ ب ۱۲', confidence: 88 })).toMatchObject({
+    kind: 'valid',
+    plate: { iranCode: '11', middleLetter: 'ب', identity: '11:ب' },
+  })
+})
+
 it('rejects a reading below 78 confidence', () => {
   expect(parsePrivatePlate({ text: '۱۲ ب ۳۴۵ ایران ۱۰', confidence: 77 })).toEqual({
     kind: 'invalid',
