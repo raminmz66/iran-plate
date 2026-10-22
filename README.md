@@ -1,3 +1,5 @@
+Iran Plate (پلاک‌یاب ایران): a privacy-first PWA that reads a standard Iranian private-car license plate with the phone camera and shows the city and province where it was issued. OCR runs entirely in the browser; no image or plate number is ever sent to a server. Work in progress. The details below are in Persian.
+
 # پلاک‌یاب ایران
 
 یک PWA شخصی برای خواندن پلاک استاندارد خودروهای سواری ایران و نمایش شهر و استان محل صدور آن.
